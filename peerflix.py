@@ -82,7 +82,7 @@ class Torrent:
 
 
 class MovieData:
-    """Stores moview related data from PopcornTime page
+    """Stores movie related data from PopcornTime page
     """
 
     def __init__(self):
@@ -108,7 +108,7 @@ class MovieData:
 
         req = Request(url, headers=headers)
         page = urlopen(req)
-        content = page.read()
+        content = page.read().decode('utf-8')  # This is needed for Python 3
 
         raw_data = None
         lines = map(str.strip, content.split("\n"))
@@ -156,7 +156,6 @@ def cmd():
 def watch_command(link, quality='1080p'):
     """the watch command
     """
-
     # this is the web page
     md = MovieData()
     md.from_url(link)
@@ -165,12 +164,14 @@ def watch_command(link, quality='1080p'):
 
     # call peerflix
     if torrent:
-        os.system("peerflix '%s' --vlc --fullscreen" % torrent.torrent_magnet)
+        os.system("peerflix '%s' --vlc -- --fullscreen" % torrent.torrent_magnet)
 
 
 class MainWindow(QtWidgets.QDialog):
     """The main application
     """
+
+    popcorn_time_site_url = "https://popcorntime-online.ch/"
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -190,11 +191,12 @@ class MainWindow(QtWidgets.QDialog):
         # create UI elements
         self.main_layout = QtWidgets.QVBoxLayout(self)
 
-        label = QtWidgets.QLabel(self)
-        label.setText("URL")
-        self.main_layout.addWidget(label)
+        site_button = QtWidgets.QPushButton(self)
+        site_button.setText("Open Popcorn Time Site!!!")
+        self.main_layout.addWidget(site_button)
 
         self.url_line_edit = QtWidgets.QLineEdit(self)
+        self.url_line_edit.setPlaceholderText("URL")
         self.main_layout.addWidget(self.url_line_edit)
 
         self.quality_combo_box = QtWidgets.QComboBox(self)
@@ -213,6 +215,12 @@ class MainWindow(QtWidgets.QDialog):
             self.watch_push_button_clicked
         )
 
+        QtCore.QObject.connect(
+            site_button,
+            QtCore.SIGNAL('clicked()'),
+            self.site_button_clicked
+        )
+
     def watch_push_button_clicked(self):
         """runs when watch push button is clicked
         """
@@ -220,11 +228,13 @@ class MainWindow(QtWidgets.QDialog):
         print(quality)
         watch_command(link=self.url_line_edit.text(), quality=quality)
 
+    def site_button_clicked(self):
+        """runs when the open site button is clicked
+        """
+        import webbrowser
+        webbrowser.open(self.popcorn_time_site_url)
+
 
 if __name__ == '__main__':
     # use the UI
     ui_caller(None, None, MainWindow)
-
-
-
-
