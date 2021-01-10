@@ -108,7 +108,10 @@ class MovieData:
 
         req = Request(url, headers=headers)
         page = urlopen(req)
-        content = page.read().decode('utf-8')  # This is needed for Python 3
+        content = page.read()
+
+        if sys.version_info.major >= 3:
+            content = content.decode('utf-8')  # This is needed for Python 3
 
         raw_data = None
         lines = map(str.strip, content.split("\n"))
