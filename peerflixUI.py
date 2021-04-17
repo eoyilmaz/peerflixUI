@@ -160,14 +160,18 @@ def watch_command(link, quality='1080p'):
     """the watch command
     """
     # this is the web page
-    md = MovieData()
-    md.from_url(link)
-
-    torrent = md.get_torrent(quality)
-
-    # call peerflix
-    if torrent:
-        os.system("peerflix '%s' --vlc -- --fullscreen" % torrent.torrent_magnet)
+    if 'magnet' in link:
+        torrent_magnet = link.replace("%3A", ":").replace("%2F", "/").replace("u0026", "&")
+        os.system("peerflix '%s' --vlc -- --fullscreen" % torrent_magnet)
+    else:
+        md = MovieData()
+        md.from_url(link)
+    
+        torrent = md.get_torrent(quality)
+    
+        # call peerflix
+        if torrent:
+            os.system("peerflix '%s' --vlc -- --fullscreen" % torrent.torrent_magnet)
 
 
 class MainWindow(QtWidgets.QDialog):
